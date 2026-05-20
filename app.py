@@ -110,15 +110,21 @@ def _call_gemini_with_image(prompt: str, image_bytes: bytes, mime_type: str) -> 
 
 
 def _build_image_prompt(question: str, temp, hum) -> str:
-    q = (question or "현재 식물 상태를 진단하고 관리 방법을 알려줘").strip()
+    # 1. 기본 질문을 격식 있고 명확한 문장으로 설정
+    default_q = "현재 식물의 전반적인 생육 상태를 진단하고, 향후 올바른 관리 방안에 대해 상세히 안내해 주십시오."
+    q = (question or default_q).strip()
+    
+    # 2. 온습도 데이터를 정밀한 분석 참고 자료로 연계
     sensor_hint = ""
     if temp is not None and hum is not None:
-        sensor_hint = f" 참고 센서값: temperature={temp}, humidity={hum}."
+        sensor_hint = f"\n[측정 환경 데이터] 현재 실내 온도: {temp}°C, 상대 습도: {hum}% 입니다. 해당 식물의 적정 생육 환경 기준과 비교하여 평가해 주십시오."
+        
+    # 3. 격식 있는 분석 및 가독성을 위한 지침 설정
     return (
-        "당신은 식물 생육 상태를 판단하는 전문가입니다. "
-        "업로드된 식물 사진을 보고 질문에 답하세요. "
-        f"질문: {q}."
-        f"{sensor_hint}"
+        "당신은 반려식물 생육 상태를 정밀하게 분석하고 조언하는 가드닝 전문가입니다.\n"
+        "제공된 식물 이미지와 센서 데이터를 종합적으로 분석하여 아래의 질문에 대해 전문적이고 객관적인 답변을 작성해 주십시오.\n\n"
+        f"💬 사용자 요청 사항: \"{q}\"\n"
+        f"{sensor_hint}\n\n"
     )
 
 
